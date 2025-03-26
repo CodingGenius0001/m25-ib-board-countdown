@@ -3,16 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Vintage Flipping Countdown Timer</title>
+  <title>M25 IB Board Exam Countdown</title>
   <style>
-    /* Overall page styling */
+    /* Overall page styling: center vertically and horizontally */
     body {
       margin: 0;
       height: 100vh;
       display: flex;
-      justify-content: center;
-      align-items: center;
-      background-color: #f0e6d6; /* vintage beige */
+      flex-direction: column;
+      justify-content: center; /* Centers content vertically */
+      align-items: center;    /* Centers content horizontally */
+      background-color: #f0e6d6; /* Vintage beige */
+    }
+    /* Title styling */
+    h1 {
+      font-family: 'Courier New', Courier, monospace;
+      color: #333;
+      margin-bottom: 20px;
+      text-align: center;
     }
     /* Timer container holding all time sections and separators */
     .timer {
@@ -75,6 +83,7 @@
   </style>
 </head>
 <body>
+  <h1>Countdown to M25 IB Board Examinations</h1>
   <div class="timer">
     <div class="time-section">
       <div class="label">DAYS</div>
@@ -115,7 +124,7 @@
 
     /**
      * Updates a unit’s digit boxes only if a digit has changed.
-     * @param {string} unit - The unit name (not used further but kept for consistency).
+     * @param {string} unit - The unit name (for reference).
      * @param {string} valueStr - The new value string (e.g. "09").
      * @param {string} containerId - The container element ID.
      * @param {number} halfDelay - Delay (ms) after which to change the digit (halfway through flip).
@@ -159,19 +168,19 @@
       var daysStr = days.toString().padStart(2, '0');
       var hoursStr = hours.toString().padStart(2, '0');
       var minutesStr = minutes.toString().padStart(2, '0');
-      updateUnit('days', daysStr, 'days-digits');       // Default halfDelay = 300
-      updateUnit('hours', hoursStr, 'hours-digits');       // Default halfDelay = 300
-      updateUnit('minutes', minutesStr, 'minutes-digits');   // Default halfDelay = 300
+      updateUnit('days', daysStr, 'days-digits');       
+      updateUnit('hours', hoursStr, 'hours-digits');       
+      updateUnit('minutes', minutesStr, 'minutes-digits');   
     }, 1000);
 
-    // For seconds, we schedule a dedicated animation that triggers 150ms before the next full second.
+    // For seconds, schedule a dedicated animation that triggers 150ms before the next full second.
     function animateSeconds() {
       var now = new Date().getTime();
       var distance = countDownDate - now;
       if (distance < 0) return;
       var seconds = Math.floor((distance % (1000 * 60)) / 1000);
       var secondsStr = seconds.toString().padStart(2, '0');
-      // For seconds, set halfDelay to 150ms so that digit update happens earlier.
+      // For seconds, set halfDelay to 150ms so that the digit update happens earlier.
       updateUnit('seconds', secondsStr, 'seconds-digits', 150, 600);
     }
 
