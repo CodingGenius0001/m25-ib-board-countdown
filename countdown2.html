@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vintage Flipping Countdown Timer</title>
+  <style>
+    /* Overall page styling */
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: #f0e6d6; /* vintage beige */
+    }
+    /* Timer container holding all time sections and separators */
+    .timer {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    /* Each time section (Days, Hours, Minutes, Seconds) */
+    .time-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    /* Label above each set of digit boxes */
+    .label {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 1em;
+      color: #333;
+      margin-bottom: 5px;
+    }
+    /* Container for the digit boxes in each section */
+    .digits {
+      display: flex;
+      gap: 5px;
+    }
+    /* Styling for each digit box */
+    .box {
+      font-size: 2em;
+      font-family: 'Courier New', Courier, monospace;
+      color: #333;
+      background: #fff;
+      padding: 15px 10px;
+      border: 3px solid #333;
+      border-radius: 5px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+      min-width: 1em;
+      text-align: center;
+    }
+    /* Separator styling (the colons between sections) */
+    .separator {
+      font-size: 2em;
+      font-family: 'Courier New', Courier, monospace;
+      color: #333;
+    }
+    /* Flip animation for individual boxes */
+    .flip {
+      animation: flip 0.6s ease;
+    }
+    @keyframes flip {
+      0% {
+        transform: rotateX(0deg);
+      }
+      50% {
+        transform: rotateX(90deg);
+      }
+      100% {
+        transform: rotateX(0deg);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="timer">
+    <div class="time-section">
+      <div class="label">DAYS</div>
+      <div class="digits" id="days-digits"></div>
+    </div>
+    <span class="separator">:</span>
+    <div class="time-section">
+      <div class="label">HOURS</div>
+      <div class="digits" id="hours-digits"></div>
+    </div>
+    <span class="separator">:</span>
+    <div class="time-section">
+      <div class="label">MINUTES</div>
+      <div class="digits" id="minutes-digits"></div>
+    </div>
+    <span class="separator">:</span>
+    <div class="time-section">
+      <div class="label">SECONDS</div>
+      <div class="digits" id="seconds-digits"></div>
+    </div>
+  </div>
+
+  <script>
+    // Set the target date for the countdown
+    var countDownDate = new Date("Apr 29, 2025 08:00:00").getTime();
+
+    // Function to rebuild a container with a given digit string.
+    function rebuildContainer(container, valueStr) {
+      container.innerHTML = '';
+      for (let i = 0; i < valueStr.length; i++) {
+        let box = document.createElement('div');
+        box.className = 'box';
+        box.textContent = valueStr[i];
+        box.setAttribute('data-digit', valueStr[i]);
+        container.appendChild(box);
+      }
+    }
+
+    /**
+     * Updates a unit’s digit boxes only if a digit has changed.
+     * @param {string} unit - The unit name (not used further but kept for consistency).
+     * @param {string} valueStr - The new value string (e.g. "09").
+     * @param {string} containerId - The container element ID.
+     * @param {number} halfDelay - Delay (ms) after which to change the digit (halfway through flip).
+     * @param {number} totalDelay - Total animation duration (ms) after which the flip class is removed.
+     */
+    function updateUnit(unit, valueStr, containerId, halfDelay = 300, totalDelay = 600) {
+      var container = document.getElementById(containerId);
+      if (container.children.length !== valueStr.length) {
+        rebuildContainer(container, valueStr);
+      } else {
+        for (let i = 0; i < valueStr.length; i++) {
+          let box = container.children[i];
+          if (box.getAttribute('data-digit') !== valueStr[i]) {
+            box.classList.add("flip");
+            // Update digit after the half-delay.
+            setTimeout(() => {
+              box.textContent = valueStr[i];
+              box.setAttribute("data-digit", valueStr[i]);
+            }, halfDelay);
+            // Remove the flip class after totalDelay.
+            setTimeout(() => {
+              box.classList.remove("flip");
+            }, totalDelay);
+          }
+        }
+      }
+    }
+
+    // Main update for days, hours, and minutes (once per second)
+    var mainInterval = setInterval(function() {
+      var now = new Date().getTime();
+      var distance = countDownDate - now;
+      if (distance < 0) {
+        clearInterval(mainInterval);
+        document.querySelector('.timer').innerHTML = "<div class='time-section'><div class='box'>EXPIRED</div></div>";
+        return;
+      }
+      var days = Math.floor(distance / (1000 * 60 * 60 * 24));
+      var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      var daysStr = days.toString().padStart(2, '0');
+      var hoursStr = hours.toString().padStart(2, '0');
+      var minutesStr = minutes.toString().padStart(2, '0');
+      updateUnit('days', daysStr, 'days-digits');       // Default halfDelay = 300
+      updateUnit('hours', hoursStr, 'hours-digits');       // Default halfDelay = 300
+      updateUnit('minutes', minutesStr, 'minutes-digits');   // Default halfDelay = 300
+    }, 1000);
+
+    // For seconds, we schedule a dedicated animation that triggers 150ms before the next full second.
+    function animateSeconds() {
+      var now = new Date().getTime();
+      var distance = countDownDate - now;
+      if (distance < 0) return;
+      var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+      var secondsStr = seconds.toString().padStart(2, '0');
+      // For seconds, set halfDelay to 150ms so that digit update happens earlier.
+      updateUnit('seconds', secondsStr, 'seconds-digits', 150, 600);
+    }
+
+    // Schedule the seconds animation using a precise timeout.
+    function scheduleSecondsAnimation() {
+      let now = Date.now();
+      // Calculate milliseconds until the next full second.
+      let msUntilNextSecond = 1000 - (now % 1000);
+      // Subtract 150ms so that the animation starts 150ms before the second changes.
+      let delay = msUntilNextSecond - 150;
+      if (delay < 0) delay = 0;
+      setTimeout(() => {
+          animateSeconds();
+          scheduleSecondsAnimation();
+      }, delay);
+    }
+
+    // Initialize all containers immediately.
+    (function init() {
+      var now = new Date().getTime();
+      var distance = countDownDate - now;
+      var days = Math.floor(distance / (1000 * 60 * 60 * 24));
+      var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+      var daysStr = days.toString().padStart(2, '0');
+      var hoursStr = hours.toString().padStart(2, '0');
+      var minutesStr = minutes.toString().padStart(2, '0');
+      var secondsStr = seconds.toString().padStart(2, '0');
+      rebuildContainer(document.getElementById('days-digits'), daysStr);
+      rebuildContainer(document.getElementById('hours-digits'), hoursStr);
+      rebuildContainer(document.getElementById('minutes-digits'), minutesStr);
+      rebuildContainer(document.getElementById('seconds-digits'), secondsStr);
+    })();
+
+    // Start the dedicated seconds animation cycle.
+    scheduleSecondsAnimation();
+  </script>
+</body>
+</html>
