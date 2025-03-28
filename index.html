@@ -3,53 +3,46 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>M25 IB Board Exam Countdown</title>
+  <title>Countdown with hCaptcha Verification</title>
+  <script src="https://js.hcaptcha.com/1/api.js" async defer></script>
   <style>
-    /* Overall page styling: center vertically and horizontally */
+    /* Countdown & Page Styling */
     body {
       margin: 0;
       height: 100vh;
       display: flex;
       flex-direction: column;
-      justify-content: center; /* Centers content vertically */
-      align-items: center;    /* Centers content horizontally */
-      background-color: #f0e6d6; /* Vintage beige */
-    }
-    /* Title styling */
-    h1 {
+      justify-content: center;
+      align-items: center;
+      background-color: #f0e6d6;
       font-family: 'Courier New', Courier, monospace;
+    }
+    h1 {
       color: #333;
       margin-bottom: 20px;
       text-align: center;
     }
-    /* Timer container holding all time sections and separators */
     .timer {
       display: flex;
       align-items: center;
       gap: 10px;
     }
-    /* Each time section (Days, Hours, Minutes, Seconds) */
     .time-section {
       display: flex;
       flex-direction: column;
       align-items: center;
     }
-    /* Label above each set of digit boxes */
     .label {
-      font-family: 'Courier New', Courier, monospace;
       font-size: 1em;
       color: #333;
       margin-bottom: 5px;
     }
-    /* Container for the digit boxes in each section */
     .digits {
       display: flex;
       gap: 5px;
     }
-    /* Styling for each digit box */
     .box {
       font-size: 2em;
-      font-family: 'Courier New', Courier, monospace;
       color: #333;
       background: #fff;
       padding: 15px 10px;
@@ -59,58 +52,81 @@
       min-width: 1em;
       text-align: center;
     }
-    /* Separator styling (the colons between sections) */
     .separator {
       font-size: 2em;
-      font-family: 'Courier New', Courier, monospace;
       color: #333;
     }
-    /* Flip animation for individual boxes */
     .flip {
       animation: flip 0.6s ease;
     }
     @keyframes flip {
-      0% {
-        transform: rotateX(0deg);
-      }
-      50% {
-        transform: rotateX(90deg);
-      }
-      100% {
-        transform: rotateX(0deg);
-      }
+      0% { transform: rotateX(0deg); }
+      50% { transform: rotateX(90deg); }
+      100% { transform: rotateX(0deg); }
+    }
+    #verify-btn {
+      padding: 12px 24px;
+      font-size: 18px;
+      cursor: pointer;
+      margin-bottom: 20px;
     }
   </style>
 </head>
 <body>
-  <h1>Countdown to M25 IB Board Examinations</h1>
-  <div class="timer">
-    <div class="time-section">
-      <div class="label">DAYS</div>
-      <div class="digits" id="days-digits"></div>
+
+  <!-- Captcha Verification -->
+  <div id="captcha-container">
+    <button id="verify-btn">Verify</button>
+    <div class="h-captcha"
+         data-sitekey="2892c134-3dba-4b14-9e62-3f508ae287d4"
+         data-callback="onCaptchaSuccess"
+         data-size="invisible">
     </div>
-    <span class="separator">:</span>
-    <div class="time-section">
-      <div class="label">HOURS</div>
-      <div class="digits" id="hours-digits"></div>
-    </div>
-    <span class="separator">:</span>
-    <div class="time-section">
-      <div class="label">MINUTES</div>
-      <div class="digits" id="minutes-digits"></div>
-    </div>
-    <span class="separator">:</span>
-    <div class="time-section">
-      <div class="label">SECONDS</div>
-      <div class="digits" id="seconds-digits"></div>
+  </div>
+
+  <!-- Countdown content (hidden until verified) -->
+  <div id="countdown-container" style="display: none;">
+    <h1>Countdown to M25 IB Board Examinations</h1>
+    <div class="timer">
+      <div class="time-section">
+        <div class="label">DAYS</div>
+        <div class="digits" id="days-digits"></div>
+      </div>
+      <span class="separator">:</span>
+      <div class="time-section">
+        <div class="label">HOURS</div>
+        <div class="digits" id="hours-digits"></div>
+      </div>
+      <span class="separator">:</span>
+      <div class="time-section">
+        <div class="label">MINUTES</div>
+        <div class="digits" id="minutes-digits"></div>
+      </div>
+      <span class="separator">:</span>
+      <div class="time-section">
+        <div class="label">SECONDS</div>
+        <div class="digits" id="seconds-digits"></div>
+      </div>
     </div>
   </div>
 
   <script>
-    // Set the target date for the countdown
+    // Trigger hCaptcha execution when the Verify button is clicked
+    document.getElementById('verify-btn').addEventListener('click', function () {
+      hcaptcha.execute();
+    });
+
+    // Callback after a successful hCaptcha response
+    function onCaptchaSuccess(token) {
+      // Hide the captcha container and show the countdown
+      document.getElementById('captcha-container').style.display = 'none';
+      document.getElementById('countdown-container').style.display = 'flex';
+      initializeCountdown();
+    }
+
+    // Countdown Timer Logic
     var countDownDate = new Date("Apr 29, 2025 08:00:00").getTime();
 
-    // Function to rebuild a container with a given digit string.
     function rebuildContainer(container, valueStr) {
       container.innerHTML = '';
       for (let i = 0; i < valueStr.length; i++) {
@@ -122,15 +138,7 @@
       }
     }
 
-    /**
-     * Updates a unit’s digit boxes only if a digit has changed.
-     * @param {string} unit - The unit name (for reference).
-     * @param {string} valueStr - The new value string (e.g. "09").
-     * @param {string} containerId - The container element ID.
-     * @param {number} halfDelay - Delay (ms) after which to change the digit (halfway through flip).
-     * @param {number} totalDelay - Total animation duration (ms) after which the flip class is removed.
-     */
-    function updateUnit(unit, valueStr, containerId, halfDelay = 300, totalDelay = 600) {
+    function updateUnit(valueStr, containerId, halfDelay = 300, totalDelay = 600) {
       var container = document.getElementById(containerId);
       if (container.children.length !== valueStr.length) {
         rebuildContainer(container, valueStr);
@@ -139,12 +147,10 @@
           let box = container.children[i];
           if (box.getAttribute('data-digit') !== valueStr[i]) {
             box.classList.add("flip");
-            // Update digit after the half-delay.
             setTimeout(() => {
               box.textContent = valueStr[i];
               box.setAttribute("data-digit", valueStr[i]);
             }, halfDelay);
-            // Remove the flip class after totalDelay.
             setTimeout(() => {
               box.classList.remove("flip");
             }, totalDelay);
@@ -153,71 +159,29 @@
       }
     }
 
-    // Main update for days, hours, and minutes (once per second)
-    var mainInterval = setInterval(function() {
-      var now = new Date().getTime();
-      var distance = countDownDate - now;
-      if (distance < 0) {
-        clearInterval(mainInterval);
-        document.querySelector('.timer').innerHTML = "<div class='time-section'><div class='box'>EXPIRED</div></div>";
-        return;
+    function initializeCountdown() {
+      function updateCountdown() {
+        var now = new Date().getTime();
+        var distance = countDownDate - now;
+        if (distance < 0) {
+          clearInterval(mainInterval);
+          document.querySelector('.timer').innerHTML =
+            "<div class='time-section'><div class='box'>EXPIRED</div></div>";
+          return;
+        }
+        var days = Math.floor(distance / (1000 * 60 * 60 * 24)).toString().padStart(2, '0');
+        var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)).toString().padStart(2, '0');
+        var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)).toString().padStart(2, '0');
+        var seconds = Math.floor((distance % (1000 * 60)) / 1000).toString().padStart(2, '0');
+        updateUnit(days, 'days-digits');
+        updateUnit(hours, 'hours-digits');
+        updateUnit(minutes, 'minutes-digits');
+        updateUnit(seconds, 'seconds-digits', 150, 600);
       }
-      var days = Math.floor(distance / (1000 * 60 * 60 * 24));
-      var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-      var daysStr = days.toString().padStart(2, '0');
-      var hoursStr = hours.toString().padStart(2, '0');
-      var minutesStr = minutes.toString().padStart(2, '0');
-      updateUnit('days', daysStr, 'days-digits');       
-      updateUnit('hours', hoursStr, 'hours-digits');       
-      updateUnit('minutes', minutesStr, 'minutes-digits');   
-    }, 1000);
 
-    // For seconds, schedule a dedicated animation that triggers 150ms before the next full second.
-    function animateSeconds() {
-      var now = new Date().getTime();
-      var distance = countDownDate - now;
-      if (distance < 0) return;
-      var seconds = Math.floor((distance % (1000 * 60)) / 1000);
-      var secondsStr = seconds.toString().padStart(2, '0');
-      // For seconds, set halfDelay to 150ms so that the digit update happens earlier.
-      updateUnit('seconds', secondsStr, 'seconds-digits', 150, 600);
+      updateCountdown(); // Initial call
+      var mainInterval = setInterval(updateCountdown, 1000);
     }
-
-    // Schedule the seconds animation using a precise timeout.
-    function scheduleSecondsAnimation() {
-      let now = Date.now();
-      // Calculate milliseconds until the next full second.
-      let msUntilNextSecond = 1000 - (now % 1000);
-      // Subtract 150ms so that the animation starts 150ms before the second changes.
-      let delay = msUntilNextSecond - 150;
-      if (delay < 0) delay = 0;
-      setTimeout(() => {
-          animateSeconds();
-          scheduleSecondsAnimation();
-      }, delay);
-    }
-
-    // Initialize all containers immediately.
-    (function init() {
-      var now = new Date().getTime();
-      var distance = countDownDate - now;
-      var days = Math.floor(distance / (1000 * 60 * 60 * 24));
-      var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-      var seconds = Math.floor((distance % (1000 * 60)) / 1000);
-      var daysStr = days.toString().padStart(2, '0');
-      var hoursStr = hours.toString().padStart(2, '0');
-      var minutesStr = minutes.toString().padStart(2, '0');
-      var secondsStr = seconds.toString().padStart(2, '0');
-      rebuildContainer(document.getElementById('days-digits'), daysStr);
-      rebuildContainer(document.getElementById('hours-digits'), hoursStr);
-      rebuildContainer(document.getElementById('minutes-digits'), minutesStr);
-      rebuildContainer(document.getElementById('seconds-digits'), secondsStr);
-    })();
-
-    // Start the dedicated seconds animation cycle.
-    scheduleSecondsAnimation();
   </script>
 </body>
 </html>
