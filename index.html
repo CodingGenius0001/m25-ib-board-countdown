@@ -80,6 +80,23 @@
         transform: rotateX(0deg);
       }
     }
+    /* Button styling */
+    .schedule-btn {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 1em;
+      color: #fff;
+      background-color: #333;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      text-decoration: none;
+      display: inline-block;
+      margin-top: 20px;
+      transition: background-color 0.3s ease;
+    }
+    .schedule-btn:hover {
+      background-color: #555;
+    }
   </style>
 </head>
 <body>
@@ -105,6 +122,9 @@
       <div class="digits" id="seconds-digits"></div>
     </div>
   </div>
+
+  <!-- Button linking to the exam schedule -->
+  <a href="https://www.ibo.org/globalassets/new-structure/programmes/dp/pdfs/may-2025-exam-schedule.pdf" class="schedule-btn" target="_blank">View M25 Schedule</a>
 
   <script>
     // Set the target date for the countdown
