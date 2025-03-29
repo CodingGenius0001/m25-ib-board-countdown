@@ -11,8 +11,8 @@
       height: 100vh;
       display: flex;
       flex-direction: column;
-      justify-content: center; /* Centers content vertically */
-      align-items: center;    /* Centers content horizontally */
+      justify-content: center;
+      align-items: center;
       background-color: #f0e6d6; /* Vintage beige */
     }
     /* Title styling */
@@ -108,9 +108,9 @@
 
   <script>
     // Set the target date for the countdown
-    var countDownDate = new Date("Apr 29, 2025 08:00:00").getTime();
+    const countDownDate = new Date("Apr 29, 2025 08:00:00").getTime();
 
-    // Function to rebuild a container with a given digit string.
+    // Rebuilds a container with the provided digit string.
     function rebuildContainer(container, valueStr) {
       container.innerHTML = '';
       for (let i = 0; i < valueStr.length; i++) {
@@ -123,101 +123,94 @@
     }
 
     /**
-     * Updates a unit’s digit boxes only if a digit has changed.
-     * @param {string} unit - The unit name (for reference).
-     * @param {string} valueStr - The new value string (e.g. "09").
-     * @param {string} containerId - The container element ID.
-     * @param {number} halfDelay - Delay (ms) after which to change the digit (halfway through flip).
-     * @param {number} totalDelay - Total animation duration (ms) after which the flip class is removed.
+     * Update a time unit's digit boxes with a flip animation if needed.
+     * @param {string} containerId - ID of the container element.
+     * @param {number|string} newValue - The new value to display.
+     * @param {number} animationDelay - Delay (ms) for updating the digit mid-flip.
+     * @param {number} totalDuration - Total animation duration (ms) to remove the flip class.
      */
-    function updateUnit(unit, valueStr, containerId, halfDelay = 300, totalDelay = 600) {
-      var container = document.getElementById(containerId);
-      if (container.children.length !== valueStr.length) {
-        rebuildContainer(container, valueStr);
-      } else {
-        for (let i = 0; i < valueStr.length; i++) {
-          let box = container.children[i];
-          if (box.getAttribute('data-digit') !== valueStr[i]) {
-            box.classList.add("flip");
-            // Update digit after the half-delay.
-            setTimeout(() => {
-              box.textContent = valueStr[i];
-              box.setAttribute("data-digit", valueStr[i]);
-            }, halfDelay);
-            // Remove the flip class after totalDelay.
-            setTimeout(() => {
-              box.classList.remove("flip");
-            }, totalDelay);
-          }
+    function updateUnit(containerId, newValue, animationDelay = 300, totalDuration = 600) {
+      const container = document.getElementById(containerId);
+      const newValueStr = newValue.toString().padStart(2, '0');
+      
+      // Rebuild container if needed.
+      if (container.children.length !== newValueStr.length) {
+        rebuildContainer(container, newValueStr);
+        return;
+      }
+      
+      // Update each digit only if it has changed.
+      for (let i = 0; i < newValueStr.length; i++) {
+        let box = container.children[i];
+        if (box.getAttribute('data-digit') !== newValueStr[i]) {
+          box.classList.add("flip");
+          // Update digit text after half the animation.
+          setTimeout(() => {
+            box.textContent = newValueStr[i];
+            box.setAttribute("data-digit", newValueStr[i]);
+          }, animationDelay);
+          // Remove the animation class after the full duration.
+          setTimeout(() => {
+            box.classList.remove("flip");
+          }, totalDuration);
         }
       }
     }
 
-    // Main update for days, hours, and minutes (once per second)
-    var mainInterval = setInterval(function() {
-      var now = new Date().getTime();
-      var distance = countDownDate - now;
+    // Initialize the digit containers with the current countdown values.
+    function initCountdown() {
+      const now = Date.now();
+      const distance = countDownDate - now;
+      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+      rebuildContainer(document.getElementById('days-digits'), days.toString().padStart(2, '0'));
+      rebuildContainer(document.getElementById('hours-digits'), hours.toString().padStart(2, '0'));
+      rebuildContainer(document.getElementById('minutes-digits'), minutes.toString().padStart(2, '0'));
+      rebuildContainer(document.getElementById('seconds-digits'), seconds.toString().padStart(2, '0'));
+      
+      return { days, hours, minutes, seconds };
+    }
+
+    // Store last displayed values to update only when necessary.
+    let lastTime = initCountdown();
+
+    // Main update loop using requestAnimationFrame for smooth timing.
+    function updateCountdown() {
+      const now = Date.now();
+      let distance = countDownDate - now;
+      
       if (distance < 0) {
-        clearInterval(mainInterval);
         document.querySelector('.timer').innerHTML = "<div class='time-section'><div class='box'>EXPIRED</div></div>";
         return;
       }
-      var days = Math.floor(distance / (1000 * 60 * 60 * 24));
-      var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-      var daysStr = days.toString().padStart(2, '0');
-      var hoursStr = hours.toString().padStart(2, '0');
-      var minutesStr = minutes.toString().padStart(2, '0');
-      updateUnit('days', daysStr, 'days-digits');       
-      updateUnit('hours', hoursStr, 'hours-digits');       
-      updateUnit('minutes', minutesStr, 'minutes-digits');   
-    }, 1000);
+      
+      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-    // For seconds, schedule a dedicated animation that triggers 150ms before the next full second.
-    function animateSeconds() {
-      var now = new Date().getTime();
-      var distance = countDownDate - now;
-      if (distance < 0) return;
-      var seconds = Math.floor((distance % (1000 * 60)) / 1000);
-      var secondsStr = seconds.toString().padStart(2, '0');
-      // For seconds, set halfDelay to 150ms so that the digit update happens earlier.
-      updateUnit('seconds', secondsStr, 'seconds-digits', 150, 600);
+      // Update only if the value has changed.
+      if (days !== lastTime.days) {
+        updateUnit('days-digits', days);
+      }
+      if (hours !== lastTime.hours) {
+        updateUnit('hours-digits', hours);
+      }
+      if (minutes !== lastTime.minutes) {
+        updateUnit('minutes-digits', minutes);
+      }
+      if (seconds !== lastTime.seconds) {
+        updateUnit('seconds-digits', seconds);
+      }
+
+      lastTime = { days, hours, minutes, seconds };
+      requestAnimationFrame(updateCountdown);
     }
 
-    // Schedule the seconds animation using a precise timeout.
-    function scheduleSecondsAnimation() {
-      let now = Date.now();
-      // Calculate milliseconds until the next full second.
-      let msUntilNextSecond = 1000 - (now % 1000);
-      // Subtract 150ms so that the animation starts 150ms before the second changes.
-      let delay = msUntilNextSecond - 150;
-      if (delay < 0) delay = 0;
-      setTimeout(() => {
-          animateSeconds();
-          scheduleSecondsAnimation();
-      }, delay);
-    }
-
-    // Initialize all containers immediately.
-    (function init() {
-      var now = new Date().getTime();
-      var distance = countDownDate - now;
-      var days = Math.floor(distance / (1000 * 60 * 60 * 24));
-      var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-      var seconds = Math.floor((distance % (1000 * 60)) / 1000);
-      var daysStr = days.toString().padStart(2, '0');
-      var hoursStr = hours.toString().padStart(2, '0');
-      var minutesStr = minutes.toString().padStart(2, '0');
-      var secondsStr = seconds.toString().padStart(2, '0');
-      rebuildContainer(document.getElementById('days-digits'), daysStr);
-      rebuildContainer(document.getElementById('hours-digits'), hoursStr);
-      rebuildContainer(document.getElementById('minutes-digits'), minutesStr);
-      rebuildContainer(document.getElementById('seconds-digits'), secondsStr);
-    })();
-
-    // Start the dedicated seconds animation cycle.
-    scheduleSecondsAnimation();
+    requestAnimationFrame(updateCountdown);
   </script>
 </body>
 </html>
