@@ -142,7 +142,7 @@
   </div>
 
   <div class="current-exam">
-    <h2>Current Examination</h2>
+    <h2>Current Examinations</h2>
     <div id="exam-name">Loading…</div>
   </div>
 
@@ -227,7 +227,7 @@
       container.innerHTML = '';
 
       if (exams.length === 0) {
-        container.textContent = 'No examination';
+        container.textContent = 'No examinations today!';
       } else if (exams.length === 1) {
         container.textContent = exams[0];
       } else {
