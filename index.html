@@ -100,7 +100,7 @@
   </style>
 </head>
 <body>
-  <h1>Countdown to M25 IB Board Examinations</h1>
+  <h1>Countdown to the end of M25 IB Board Examinations</h1>
   <div class="timer">
     <div class="time-section">
       <div class="label">DAYS</div>
@@ -127,10 +127,9 @@
   <a href="https://www.ibo.org/globalassets/new-structure/programmes/dp/pdfs/may-2025-exam-schedule.pdf" class="schedule-btn" target="_blank">View M25 Schedule</a>
 
   <script>
-    // Set the target date for the countdown to April 29, 2025 at 13:00 IST
-    const countDownDate = new Date("Apr 29, 2025 13:00:00").getTime();
+    // Set the target date for the countdown to May 21, 2025 at 14:20 IST
+    const countDownDate = new Date("May 21, 2025 14:20:00").getTime();
 
-    // Rebuilds a container with the provided digit string.
     function rebuildContainer(container, valueStr) {
       container.innerHTML = '';
       for (let i = 0; i < valueStr.length; i++) {
@@ -142,34 +141,21 @@
       }
     }
 
-    /**
-     * Update a time unit's digit boxes with a flip animation if needed.
-     * @param {string} containerId - ID of the container element.
-     * @param {number|string} newValue - The new value to display.
-     * @param {number} animationDelay - Delay (ms) for updating the digit mid-flip.
-     * @param {number} totalDuration - Total animation duration (ms) to remove the flip class.
-     */
     function updateUnit(containerId, newValue, animationDelay = 300, totalDuration = 600) {
       const container = document.getElementById(containerId);
       const newValueStr = newValue.toString().padStart(2, '0');
-      
-      // Rebuild container if needed.
       if (container.children.length !== newValueStr.length) {
         rebuildContainer(container, newValueStr);
         return;
       }
-      
-      // Update each digit only if it has changed.
       for (let i = 0; i < newValueStr.length; i++) {
         let box = container.children[i];
         if (box.getAttribute('data-digit') !== newValueStr[i]) {
           box.classList.add("flip");
-          // Update digit text after half the animation.
           setTimeout(() => {
             box.textContent = newValueStr[i];
             box.setAttribute("data-digit", newValueStr[i]);
           }, animationDelay);
-          // Remove the animation class after the full duration.
           setTimeout(() => {
             box.classList.remove("flip");
           }, totalDuration);
@@ -177,7 +163,6 @@
       }
     }
 
-    // Initialize the digit containers with the current countdown values.
     function initCountdown() {
       const now = Date.now();
       const distance = countDownDate - now;
@@ -194,16 +179,15 @@
       return { days, hours, minutes, seconds };
     }
 
-    // Store last displayed values to update only when necessary.
     let lastTime = initCountdown();
 
-    // Main update loop using requestAnimationFrame for smooth timing.
     function updateCountdown() {
       const now = Date.now();
       let distance = countDownDate - now;
       
       if (distance < 0) {
-        document.querySelector('.timer').innerHTML = "<div class='time-section'><div class='box'>EXPIRED</div></div>";
+        document.querySelector('.timer').innerHTML =
+          "<div class='time-section'><div class='box'>Examinations ended!!! 🥳🥳🥳</div></div>";
         return;
       }
       
@@ -212,19 +196,10 @@
       const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
       const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-      // Update only if the value has changed.
-      if (days !== lastTime.days) {
-        updateUnit('days-digits', days);
-      }
-      if (hours !== lastTime.hours) {
-        updateUnit('hours-digits', hours);
-      }
-      if (minutes !== lastTime.minutes) {
-        updateUnit('minutes-digits', minutes);
-      }
-      if (seconds !== lastTime.seconds) {
-        updateUnit('seconds-digits', seconds);
-      }
+      if (days !== lastTime.days)   updateUnit('days-digits', days);
+      if (hours !== lastTime.hours) updateUnit('hours-digits', hours);
+      if (minutes !== lastTime.minutes) updateUnit('minutes-digits', minutes);
+      if (seconds !== lastTime.seconds) updateUnit('seconds-digits', seconds);
 
       lastTime = { days, hours, minutes, seconds };
       requestAnimationFrame(updateCountdown);
