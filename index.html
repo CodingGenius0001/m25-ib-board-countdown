@@ -74,7 +74,7 @@
       margin-bottom: 10px;
     }
 
-    /* Box around the exam(s), with text at 20px */
+    /* Box around the exam(s), text centered at 20px */
     #exam-name {
       display: inline-block;
       background: #fff;
@@ -87,16 +87,17 @@
       font-size: 20px;
       font-weight: 600;
       color: #333;
-      text-align: left;
+      text-align: center;
       line-height: 1.4;
     }
-    #exam-name ul,
-    #exam-name li {
+    #exam-name ul {
       margin: 0;
-      padding-left: 1em;
-      font-size: inherit;
-      font-weight: inherit;
-      list-style: disc inside;
+      padding: 0;
+      list-style: none;
+    }
+    #exam-name li {
+      margin: 0.2em 0;
+      text-align: center;
     }
 
     .schedule-btn {
@@ -261,7 +262,7 @@
       const seconds = Math.floor((diff % (1000*60)) / 1000);
 
       if (days !== lastValues.days)       updateDigits('days-digits', days);
-      if (hours !== lastValues.hours)    updateDigits('hours-digits', hours);
+      if (hours !== lastValues.hours)     updateDigits('hours-digits', hours);
       if (minutes !== lastValues.minutes) updateDigits('minutes-digits', minutes);
       if (seconds !== lastValues.seconds) updateDigits('seconds-digits', seconds);
 
