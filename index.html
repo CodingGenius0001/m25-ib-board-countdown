@@ -74,7 +74,6 @@
       margin-bottom: 10px;
     }
 
-    /* Box around the exam(s), with text at 20px */
     #exam-name {
       display: inline-block;
       background: #fff;
@@ -87,16 +86,17 @@
       font-size: 20px;
       font-weight: 600;
       color: #333;
-      text-align: left;
+      text-align: center;
       line-height: 1.4;
     }
-    #exam-name ul,
-    #exam-name li {
+    #exam-name ul {
       margin: 0;
-      padding-left: 1em;
-      font-size: inherit;
-      font-weight: inherit;
-      list-style: disc inside;
+      padding: 0;
+      list-style: none;
+    }
+    #exam-name li {
+      margin: 0.2em 0;
+      text-align: center;
     }
 
     .schedule-btn {
@@ -112,6 +112,20 @@
     }
     .schedule-btn:hover {
       background-color: #555;
+    }
+
+    #view-counter {
+      position: fixed;
+      bottom: 10px;
+      left: 10px;
+      background: #fff;
+      color: #333;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 0.9em;
+      padding: 5px 10px;
+      border: 2px solid #333;
+      border-radius: 5px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.3);
     }
   </style>
 </head>
@@ -141,15 +155,16 @@
   </div>
 
   <div class="current-exam">
-    <h2>Current Examination</h2>
+    <h2>Current Examinations</h2>
     <div id="exam-name">Loading…</div>
   </div>
 
   <a href="https://www.ibo.org/globalassets/new-structure/programmes/dp/pdfs/may-2025-exam-schedule.pdf"
      class="schedule-btn" target="_blank">View M25 Schedule</a>
 
+  <div id="view-counter">Loading…</div>
+
   <script>
-    // Local target: May 21, 2025 at 14:20
     const targetTime = new Date(2025, 4, 21, 14, 20, 0).getTime();
 
     const examSchedule = {
@@ -159,7 +174,6 @@
       "2025-04-30": ["Physics HL paper 2","Physics SL paper 2","Sports, exercise & health science HL paper 2","Sports, exercise & health science SL paper 2","Business management HL/SL paper 1","Business management HL paper 3"],
       "2025-05-01": [],
       "2025-05-02": ["Business management HL paper 2","Business management SL paper 2","Computer science HL paper 1","Computer science SL paper 1","Environmental systems & societies SL paper 1"],
-      /* …etc… */
       "2025-05-21": ["Mathematics AA HL paper 3","Mathematics AI HL paper 3"]
     };
 
@@ -226,7 +240,7 @@
       container.innerHTML = '';
 
       if (exams.length === 0) {
-        container.textContent = 'No examination';
+        container.textContent = 'No examinations today!';
       } else if (exams.length === 1) {
         container.textContent = exams[0];
       } else {
@@ -240,9 +254,20 @@
       }
     }
 
+    function updateViewCount() {
+      fetch('https://api.countapi.xyz/hit/ib-m25-board-exam-countdown.vercel.app/visits')
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById('view-counter').textContent =
+            data.value + ' viewed this site';
+        })
+        .catch(err => console.error('CountAPI error:', err));
+    }
+
     let lastValues = initializeCountdown();
     let lastDateKey = getTodayKey();
     renderCurrentExam();
+    updateViewCount();
 
     (function tick() {
       const now = Date.now();
@@ -261,7 +286,7 @@
       const seconds = Math.floor((diff % (1000*60)) / 1000);
 
       if (days !== lastValues.days)       updateDigits('days-digits', days);
-      if (hours !== lastValues.hours)    updateDigits('hours-digits', hours);
+      if (hours !== lastValues.hours)     updateDigits('hours-digits', hours);
       if (minutes !== lastValues.minutes) updateDigits('minutes-digits', minutes);
       if (seconds !== lastValues.seconds) updateDigits('seconds-digits', seconds);
 
