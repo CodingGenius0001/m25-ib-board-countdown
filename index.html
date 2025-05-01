@@ -140,15 +140,15 @@
   <a href="https://www.ibo.org/globalassets/new-structure/programmes/dp/pdfs/may-2025-exam-schedule.pdf"
      class="schedule-btn" target="_blank">View M25 Schedule</a>
 
-  <!-- Free Visitor Counter -->
+  <!-- Free Visitor Counter Embed -->
   <a href="http://www.freevisitorcounters.com">www.Freevisitorcounters</a>
-  <script type="text/javascript" src="https://www.freevisitorcounters.com/auth.php?id=4b81c57cf9170232e8f7264225489dacfc6da379"></script>
-  <script type="text/javascript" src="https://www.freevisitorcounters.com/en/home/counter/1334893/t/3"></script>
+  <script type="text/javascript" src="https://www.freevisitorcounters.com/auth.php?id=6b0572fdab50b475582baab3bf5ef02e6029179a"></script>
+  <script type="text/javascript" src="https://www.freevisitorcounters.com/en/home/counter/1334895/t/3"></script>
 
   <script>
     const targetTime = new Date(2025, 4, 21, 14, 20, 0).getTime();
     const examSchedule = {
-      "2025-04-25": ["School-based syllabus SL paper 1", "Language & culture SL paper 1"],
+      "2025-04-25": ["School-based syllabus SL paper 1","Language & culture SL paper 1"],
       "2025-04-28": ["School-based syllabus SL paper 2","Language A Literature HL paper 1","Language A Literature SL paper 1","Language A Language & Literature HL paper 1","Language A Language & Literature SL paper 1","Language & culture SL paper 2"],
       "2025-04-29": ["Language A Literature HL/SL paper 2","Language A Language & Literature HL/SL paper 2","Physics HL paper 1 (1a & 1b)","Physics SL paper 1 (1a & 1b)","Sports, exercise & health science HL paper 1","Sports, exercise & health science HL paper 3","Sports, exercise & health science SL paper 1","Sports, exercise & health science SL paper 3"],
       "2025-04-30": ["Physics HL paper 2","Physics SL paper 2","Sports, exercise & health science HL paper 2","Sports, exercise & health science SL paper 2","Business management HL/SL paper 1","Business management HL paper 3"],
@@ -158,7 +158,7 @@
     };
 
     function pad(n){ return String(n).padStart(2,'0'); }
-    function rebuildDigits(el,val){
+    function rebuildDigits(el, val){
       el.innerHTML = '';
       for(let ch of pad(val)){
         const b = document.createElement('div');
@@ -168,10 +168,10 @@
         el.appendChild(b);
       }
     }
-    function updateDigits(id,val){
+    function updateDigits(id, val){
       const el = document.getElementById(id), s = pad(val);
       if(el.children.length !== s.length){
-        rebuildDigits(el,val);
+        rebuildDigits(el, val);
         return;
       }
       for(let i=0;i<s.length;i++){
@@ -220,6 +220,7 @@
         out.appendChild(ul);
       }
     }
+
     let last = initialize(), lastDate = todayKey();
     renderExams();
     (function tick(){
@@ -230,10 +231,10 @@
         document.getElementById('exam-name').textContent = '';
         return;
       }
-      const d = Math.floor(diff/(1000*60*60*24)),
-            h = Math.floor((diff%(1000*60*60*24))/(1000*60*60)),
-            m = Math.floor((diff%(1000*60*60))/(1000*60)),
-            s = Math.floor((diff%(1000*60))/1000);
+      const d = Math.floor(diff/(1000*60*60*24));
+      const h = Math.floor((diff%(1000*60*60*24))/(1000*60*60));
+      const m = Math.floor((diff%(1000*60*60))/(1000*60));
+      const s = Math.floor((diff%(1000*60))/1000);
       if (d !== last.days)    updateDigits('days-digits', d);
       if (h !== last.hours)   updateDigits('hours-digits', h);
       if (m !== last.minutes) updateDigits('minutes-digits', m);
