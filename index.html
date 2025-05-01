@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>M25 IB Board Exam Countdown</title>
   <style>
-    /* Overall page styling: center vertically and horizontally */
     body {
       margin: 0;
       height: 100vh;
@@ -13,74 +12,92 @@
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      background-color: #f0e6d6; /* Vintage beige */
+      background-color: #f0e6d6;
     }
-    /* Title styling */
     h1 {
       font-family: 'Courier New', Courier, monospace;
+      font-size: 2.5em;
       color: #333;
       margin-bottom: 20px;
       text-align: center;
     }
-    /* Timer container holding all time sections and separators */
     .timer {
       display: flex;
       align-items: center;
       gap: 10px;
     }
-    /* Each time section (Days, Hours, Minutes, Seconds) */
     .time-section {
       display: flex;
       flex-direction: column;
       align-items: center;
     }
-    /* Label above each set of digit boxes */
-    .label {
+    .label, .schedule-btn, .current-exam h2 {
       font-family: 'Courier New', Courier, monospace;
-      font-size: 1em;
       color: #333;
+    }
+    .label {
       margin-bottom: 5px;
     }
-    /* Container for the digit boxes in each section */
     .digits {
       display: flex;
       gap: 5px;
     }
-    /* Styling for each digit box */
     .box {
-      font-size: 2em;
       font-family: 'Courier New', Courier, monospace;
-      color: #333;
       background: #fff;
+      color: #333;
       padding: 15px 10px;
       border: 3px solid #333;
       border-radius: 5px;
       box-shadow: 0 0 10px rgba(0,0,0,0.3);
-      min-width: 1em;
-      text-align: center;
-    }
-    /* Separator styling (the colons between sections) */
-    .separator {
       font-size: 2em;
+      text-align: center;
+      min-width: 1em;
+    }
+    .separator {
       font-family: 'Courier New', Courier, monospace;
+      font-size: 2em;
       color: #333;
     }
-    /* Flip animation for individual boxes */
     .flip {
       animation: flip 0.6s ease;
     }
     @keyframes flip {
-      0% {
-        transform: rotateX(0deg);
-      }
-      50% {
-        transform: rotateX(90deg);
-      }
-      100% {
-        transform: rotateX(0deg);
-      }
+      0%   { transform: rotateX(0deg); }
+      50%  { transform: rotateX(90deg); }
+      100% { transform: rotateX(0deg); }
     }
-    /* Button styling */
+
+    /* Current Examination styling */
+    .current-exam {
+      margin: 20px 0;
+      text-align: center;
+    }
+    .current-exam h2 {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 1.6em;   /* reduced from 2em */
+      margin-bottom: 10px;
+    }
+    .current-exam .box {
+      display: inline-block;
+      padding: 20px 40px;
+      min-width: 250px;
+      font-size: 1.4em;
+      font-weight: 600;
+      border: 4px solid #333;
+      border-radius: 5px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+    }
+    .current-exam ul {
+      list-style: disc inside;
+      font-family: 'Courier New', Courier, monospace;
+      color: #333;
+      padding: 0;
+      margin: 0;
+      text-align: left;
+      display: inline-block;
+    }
+
     .schedule-btn {
       font-family: 'Courier New', Courier, monospace;
       font-size: 1em;
@@ -90,8 +107,6 @@
       border: none;
       border-radius: 5px;
       text-decoration: none;
-      display: inline-block;
-      margin-top: 20px;
       transition: background-color 0.3s ease;
     }
     .schedule-btn:hover {
@@ -101,6 +116,7 @@
 </head>
 <body>
   <h1>Countdown to the end of M25 IB Board Examinations</h1>
+
   <div class="timer">
     <div class="time-section">
       <div class="label">DAYS</div>
@@ -123,89 +139,311 @@
     </div>
   </div>
 
-  <!-- Button linking to the exam schedule -->
-  <a href="https://www.ibo.org/globalassets/new-structure/programmes/dp/pdfs/may-2025-exam-schedule.pdf" class="schedule-btn" target="_blank">View M25 Schedule</a>
+  <div class="current-exam">
+    <h2>Current Examination</h2>
+    <div id="exam-name"></div>
+  </div>
+
+  <a href="https://www.ibo.org/globalassets/new-structure/programmes/dp/pdfs/may-2025-exam-schedule.pdf"
+     class="schedule-btn" target="_blank">View M25 Schedule</a>
 
   <script>
-    // Set the target date for the countdown to May 21, 2025 at 14:20 IST
+    // countdown target: May 21, 2025 2:20 PM IST
     const countDownDate = new Date("May 21, 2025 14:20:00").getTime();
 
-    function rebuildContainer(container, valueStr) {
+    // full May 2025 exam schedule
+    const examSchedule = {
+      "2025-04-25": ["School-based syllabus SL paper 1", "Language & culture SL paper 1"],
+      "2025-04-28": [
+        "School-based syllabus SL paper 2",
+        "Language A Literature HL paper 1",
+        "Language A Literature SL paper 1",
+        "Language A Language & Literature HL paper 1",
+        "Language A Language & Literature SL paper 1",
+        "Language & culture SL paper 2"
+      ],
+      "2025-04-29": [
+        "Language A Literature HL/SL paper 2",
+        "Language A Language & Literature HL/SL paper 2",
+        "Physics HL paper 1 (1a&1b)",
+        "Physics SL paper 1 (1a&1b)",
+        "Sports, exercise & health science HL paper 1",
+        "Sports, exercise & health science HL paper 3",
+        "Sports, exercise & health science SL paper 1",
+        "Sports, exercise & health science SL paper 3"
+      ],
+      "2025-04-30": [
+        "Physics HL paper 2",
+        "Physics SL paper 2",
+        "Sports, exercise & health science HL paper 2",
+        "Sports, exercise & health science SL paper 2",
+        "Business management HL/SL paper 1",
+        "Business management HL paper 3"
+      ],
+      "2025-05-01": [],
+      "2025-05-02": [
+        "Business management HL paper 2",
+        "Business management SL paper 2",
+        "Computer science HL paper 1",
+        "Computer science SL paper 1",
+        "Environmental systems & societies SL paper 1"
+      ],
+      "2025-05-05": [
+        "Computer science HL paper 2",
+        "Computer science HL paper 3",
+        "Computer science SL paper 2",
+        "History HL/SL paper 1",
+        "History HL/SL paper 2",
+        "Environmental systems & societies SL paper 2"
+      ],
+      "2025-05-06": [
+        "History HL paper 3",
+        "Language B HL paper 1",
+        "Language B HL paper 2 (reading)",
+        "Language B SL paper 1",
+        "Language B SL paper 2 (reading)",
+        "Language ab initio SL paper 1",
+        "Language ab initio SL paper 2",
+        "Latin HL paper 1",
+        "Latin SL paper 1"
+      ],
+      "2025-05-07": [
+        "Language B HL paper 2 (listening)",
+        "Language B SL paper 2 (listening)",
+        "Language ab initio SL paper 2 (listening)",
+        "Latin HL paper 2",
+        "Latin SL paper 2",
+        "Psychology HL paper 1",
+        "Psychology SL paper 1"
+      ],
+      "2025-05-08": [
+        "Psychology HL paper 2",
+        "Psychology HL paper 3",
+        "Psychology SL paper 2",
+        "English A Literature HL paper 1",
+        "English A Literature SL paper 1",
+        "English A Language & Literature HL paper 1",
+        "English A Language & Literature SL paper 1",
+        "English B HL paper 1",
+        "English B HL paper 2 (reading)",
+        "English B SL paper 1",
+        "English B SL paper 2 (reading)",
+        "English ab initio SL paper 1",
+        "English ab initio SL paper 2"
+      ],
+      "2025-05-09": [
+        "English A Literature HL/SL paper 2",
+        "English A Language & Literature HL/SL paper 2",
+        "English B HL paper 2 (listening)",
+        "English B SL paper 2 (listening)",
+        "English ab initio SL paper 2 (listening)",
+        "Geography HL paper 1",
+        "Geography SL paper 1",
+        "Philosophy HL paper 1",
+        "Philosophy SL paper 1",
+        "Social & cultural anthropology HL paper 1",
+        "Social & cultural anthropology SL paper 1",
+        "Literature & performance SL paper 1"
+      ],
+      "2025-05-12": [
+        "Geography HL/SL paper 2",
+        "Geography HL paper 3",
+        "Philosophy HL/SL paper 2",
+        "Philosophy HL paper 3",
+        "Social & cultural anthropology HL paper 2",
+        "Social & cultural anthropology SL paper 2",
+        "Biology HL paper 1 (1a&1b)",
+        "Biology SL paper 1 (1a&1b)"
+      ],
+      "2025-05-13": [
+        "Biology HL paper 2",
+        "Biology SL paper 2",
+        "Economics HL/SL paper 2",
+        "World religions SL paper 1"
+      ],
+      "2025-05-14": [
+        "Economics HL paper 1",
+        "Economics HL paper 3",
+        "Economics SL paper 1",
+        "World religions SL paper 2",
+        "Classical Greek HL paper 1",
+        "Classical Greek SL paper 1",
+        "Spanish A Literature HL paper 1",
+        "Spanish A Literature SL paper 1",
+        "Spanish A Language & Literature HL paper 1",
+        "Spanish A Language & Literature SL paper 1",
+        "Spanish B HL paper 1",
+        "Spanish B HL paper 2 (reading)",
+        "Spanish B SL paper 1",
+        "Spanish B SL paper 2 (reading)",
+        "Spanish ab initio SL paper 1",
+        "Spanish ab initio SL paper 2",
+        "Mathematics AA HL paper 1",
+        "Mathematics AA SL paper 1",
+        "Mathematics AI HL paper 1",
+        "Mathematics AI SL paper 1"
+      ],
+      "2025-05-15": [
+        "Classical Greek HL paper 2",
+        "Classical Greek SL paper 2",
+        "Spanish A Literature HL/SL paper 2",
+        "Spanish A Language & Literature HL/SL paper 2",
+        "Spanish B HL paper 2 (listening)",
+        "Spanish B SL paper 2 (listening)",
+        "Spanish ab initio SL paper 2 (listening)",
+        "Chemistry HL paper 1 (1a&1b)",
+        "Chemistry SL paper 1 (1a&1b)",
+        "Design technology HL paper 1",
+        "Design technology SL paper 1",
+        "Design technology HL/SL paper 2"
+      ],
+      "2025-05-16": [
+        "Chemistry HL paper 2",
+        "Chemistry SL paper 2",
+        "Design technology HL paper 3",
+        "Digital society HL paper 1",
+        "Digital society SL paper 1",
+        "Global politics HL/SL paper 1"
+      ],
+      "2025-05-19": [
+        "Digital society HL/SL paper 2",
+        "Digital society HL paper 3",
+        "Global politics HL paper 2",
+        "Global politics SL paper 2",
+        "French A Literature HL paper 1",
+        "French A Literature SL paper 1",
+        "French A Language & Literature HL paper 1",
+        "French A Language & Literature SL paper 1",
+        "French B HL paper 1",
+        "French B HL paper 2 (reading)",
+        "French B SL paper 1",
+        "French B SL paper 2 (reading)",
+        "French ab initio SL paper 1",
+        "French ab initio SL paper 2"
+      ],
+      "2025-05-20": [
+        "French A Literature HL/SL paper 2",
+        "French A Language & Literature HL/SL paper 2",
+        "French B HL paper 2 (listening)",
+        "French B SL paper 2 (listening)",
+        "French ab initio SL paper 2 (listening)",
+        "Mathematics AA HL paper 2",
+        "Mathematics AA SL paper 2",
+        "Mathematics AI HL paper 2",
+        "Mathematics AI SL paper 2"
+      ],
+      "2025-05-21": [
+        "Mathematics AA HL paper 3",
+        "Mathematics AI HL paper 3"
+      ]
+    };
+
+    function rebuildContainer(container, str) {
       container.innerHTML = '';
-      for (let i = 0; i < valueStr.length; i++) {
+      for (let ch of str) {
         let box = document.createElement('div');
         box.className = 'box';
-        box.textContent = valueStr[i];
-        box.setAttribute('data-digit', valueStr[i]);
+        box.textContent = ch;
+        box.setAttribute('data-digit', ch);
         container.appendChild(box);
       }
     }
 
-    function updateUnit(containerId, newValue, animationDelay = 300, totalDuration = 600) {
-      const container = document.getElementById(containerId);
-      const newValueStr = newValue.toString().padStart(2, '0');
-      if (container.children.length !== newValueStr.length) {
-        rebuildContainer(container, newValueStr);
+    function updateUnit(id, val) {
+      const cont = document.getElementById(id);
+      const s = String(val).padStart(2,'0');
+      if (cont.children.length !== s.length) {
+        rebuildContainer(cont, s);
         return;
       }
-      for (let i = 0; i < newValueStr.length; i++) {
-        let box = container.children[i];
-        if (box.getAttribute('data-digit') !== newValueStr[i]) {
-          box.classList.add("flip");
+      for (let i = 0; i < s.length; i++) {
+        const box = cont.children[i];
+        if (box.getAttribute('data-digit') !== s[i]) {
+          box.classList.add('flip');
           setTimeout(() => {
-            box.textContent = newValueStr[i];
-            box.setAttribute("data-digit", newValueStr[i]);
-          }, animationDelay);
-          setTimeout(() => {
-            box.classList.remove("flip");
-          }, totalDuration);
+            box.textContent = s[i];
+            box.setAttribute('data-digit', s[i]);
+          }, 300);
+          setTimeout(() => box.classList.remove('flip'), 600);
         }
       }
     }
 
     function initCountdown() {
-      const now = Date.now();
-      const distance = countDownDate - now;
-      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+      const now = Date.now(),
+            diff = countDownDate - now;
+      const days  = Math.floor(diff / 86400000),
+            hours = Math.floor((diff % 86400000) / 3600000),
+            mins  = Math.floor((diff % 3600000) / 60000),
+            secs  = Math.floor((diff % 60000) / 1000);
 
-      rebuildContainer(document.getElementById('days-digits'), days.toString().padStart(2, '0'));
-      rebuildContainer(document.getElementById('hours-digits'), hours.toString().padStart(2, '0'));
-      rebuildContainer(document.getElementById('minutes-digits'), minutes.toString().padStart(2, '0'));
-      rebuildContainer(document.getElementById('seconds-digits'), seconds.toString().padStart(2, '0'));
-      
-      return { days, hours, minutes, seconds };
+      rebuildContainer(document.getElementById('days-digits'),  String(days).padStart(2,'0'));
+      rebuildContainer(document.getElementById('hours-digits'), String(hours).padStart(2,'0'));
+      rebuildContainer(document.getElementById('minutes-digits'),String(mins).padStart(2,'0'));
+      rebuildContainer(document.getElementById('seconds-digits'),String(secs).padStart(2,'0'));
+
+      return {days,hours,minutes:mins,seconds:secs};
     }
 
-    let lastTime = initCountdown();
+    function updateExam() {
+      const today = new Date().toISOString().slice(0,10);
+      const exams = examSchedule[today] || [];
+      const container = document.getElementById('exam-name');
+      container.innerHTML = '';
 
-    function updateCountdown() {
-      const now = Date.now();
-      let distance = countDownDate - now;
-      
-      if (distance < 0) {
+      if (exams.length === 0) {
+        container.textContent = 'No examination';
+        container.className = 'box';
+      } else if (exams.length === 1) {
+        container.textContent = exams[0];
+        container.className = 'box';
+      } else {
+        container.className = '';
+        const ul = document.createElement('ul');
+        exams.forEach(e => {
+          const li = document.createElement('li');
+          li.textContent = e;
+          ul.appendChild(li);
+        });
+        container.appendChild(ul);
+      }
+    }
+
+    let last = initCountdown();
+    updateExam();
+
+    function loop() {
+      const now = Date.now(),
+            diff = countDownDate - now;
+
+      if (diff < 0) {
         document.querySelector('.timer').innerHTML =
           "<div class='time-section'><div class='box'>Examinations ended!!! 🥳🥳🥳</div></div>";
+        document.getElementById('exam-name').innerHTML = '';
         return;
       }
-      
-      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-      if (days !== lastTime.days)   updateUnit('days-digits', days);
-      if (hours !== lastTime.hours) updateUnit('hours-digits', hours);
-      if (minutes !== lastTime.minutes) updateUnit('minutes-digits', minutes);
-      if (seconds !== lastTime.seconds) updateUnit('seconds-digits', seconds);
+      const days  = Math.floor(diff / 86400000),
+            hours = Math.floor((diff % 86400000) / 3600000),
+            mins  = Math.floor((diff % 3600000) / 60000),
+            secs  = Math.floor((diff % 60000) / 1000);
 
-      lastTime = { days, hours, minutes, seconds };
-      requestAnimationFrame(updateCountdown);
+      if (days   !== last.days)    updateUnit('days-digits', days);
+      if (hours  !== last.hours)   updateUnit('hours-digits', hours);
+      if (mins   !== last.minutes) updateUnit('minutes-digits', mins);
+      if (secs   !== last.seconds) updateUnit('seconds-digits', secs);
+
+      // on midnight rollover, refresh exam list
+      const newDay = new Date().toISOString().slice(0,10);
+      if (newDay !== (new Date(Date.now() - secs*1000)).toISOString().slice(0,10)) {
+        updateExam();
+      }
+
+      last = {days,hours,minutes:mins,seconds:secs};
+      requestAnimationFrame(loop);
     }
 
-    requestAnimationFrame(updateCountdown);
+    requestAnimationFrame(loop);
   </script>
 </body>
 </html>
