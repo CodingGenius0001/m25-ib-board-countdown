@@ -36,10 +36,7 @@
       color: #333;
     }
     .label { margin-bottom: 5px; }
-    .digits {
-      display: flex;
-      gap: 5px;
-    }
+    .digits { display: flex; gap: 5px; }
     .box {
       font-family: 'Courier New', Courier, monospace;
       background: #fff;
@@ -107,10 +104,7 @@
       text-decoration: none;
       transition: background-color 0.3s ease;
     }
-    .schedule-btn:hover {
-      background-color: #555;
-    }
-    /* View-counter styling */
+    .schedule-btn:hover { background-color: #555; }
     #view-counter {
       position: fixed;
       bottom: 10px;
@@ -159,14 +153,10 @@
   <a href="https://www.ibo.org/globalassets/new-structure/programmes/dp/pdfs/may-2025-exam-schedule.pdf"
      class="schedule-btn" target="_blank">View M25 Schedule</a>
 
-  <!-- view counter -->
   <div id="view-counter">Loading…</div>
 
   <script>
-    // 1) Countdown target
     const targetTime = new Date(2025, 4, 21, 14, 20, 0).getTime();
-
-    // 2) Exam schedule map
     const examSchedule = {
       "2025-04-25": ["School-based syllabus SL paper 1","Language & culture SL paper 1"],
       "2025-04-28": ["School-based syllabus SL paper 2","Language A Literature HL paper 1","Language A Literature SL paper 1","Language A Language & Literature HL paper 1","Language A Language & Literature SL paper 1","Language & culture SL paper 2"],
@@ -177,46 +167,42 @@
       "2025-05-21": ["Mathematics AA HL paper 3","Mathematics AI HL paper 3"]
     };
 
-    // pad helper
     function pad(n){ return String(n).padStart(2,'0'); }
-
-    // rebuild digit boxes
     function rebuildDigits(el,val){
-      el.innerHTML='';
+      el.innerHTML = '';
       for(let ch of pad(val)){
-        const box = document.createElement('div');
-        box.className='box';
-        box.textContent=ch;
-        box.setAttribute('data-digit',ch);
-        el.appendChild(box);
+        const b = document.createElement('div');
+        b.className = 'box';
+        b.textContent = ch;
+        b.dataset.digit = ch;
+        el.appendChild(b);
       }
     }
-
-    // update with flip animation
     function updateDigits(id,val){
-      const el=document.getElementById(id), s=pad(val);
-      if(el.children.length!==s.length){
+      const el = document.getElementById(id), s = pad(val);
+      if(el.children.length !== s.length){
         rebuildDigits(el,val);
         return;
       }
       for(let i=0;i<s.length;i++){
-        const c=el.children[i];
-        if(c.getAttribute('data-digit')!==s[i]){
-          c.classList.add('flip');
-          setTimeout(()=>{ c.textContent=s[i]; c.setAttribute('data-digit',s[i]); },300);
-          setTimeout(()=>c.classList.remove('flip'),600);
+        const box = el.children[i];
+        if(box.dataset.digit !== s[i]){
+          box.classList.add('flip');
+          setTimeout(()=>{
+            box.textContent = s[i];
+            box.dataset.digit = s[i];
+          },300);
+          setTimeout(()=> box.classList.remove('flip'),600);
         }
       }
     }
 
-    // init countdown once
-    function initializeCountdown(){
-      const now=Date.now(), diff=targetTime-now;
-      const d=Math.floor(diff/(1000*60*60*24));
-      const h=Math.floor((diff%(1000*60*60*24))/(1000*60*60));
-      const m=Math.floor((diff%(1000*60*60))/(1000*60));
-      const s=Math.floor((diff%(1000*60))/1000);
-
+    function initialize(){
+      const now = Date.now(), diff = targetTime - now;
+      const d = Math.floor(diff/(1000*60*60*24));
+      const h = Math.floor((diff%(1000*60*60*24))/(1000*60*60));
+      const m = Math.floor((diff%(1000*60*60))/(1000*60));
+      const s = Math.floor((diff%(1000*60))/1000);
       rebuildDigits(document.getElementById('days-digits'),d);
       rebuildDigits(document.getElementById('hours-digits'),h);
       rebuildDigits(document.getElementById('minutes-digits'),m);
@@ -224,76 +210,76 @@
       return { days:d, hours:h, minutes:m, seconds:s };
     }
 
-    // today's key
-    function getTodayKey(){
-      const dd=new Date();
-      return `${dd.getFullYear()}-${pad(dd.getMonth()+1)}-${pad(dd.getDate())}`;
+    function todayKey(){
+      const t = new Date();
+      return `${t.getFullYear()}-${pad(t.getMonth()+1)}-${pad(t.getDate())}`;
     }
 
-    // render today's exams
-    function renderCurrentExam(){
-      const key=getTodayKey(), list=examSchedule[key]||[], el=document.getElementById('exam-name');
-      el.innerHTML='';
+    function renderExams(){
+      const list = examSchedule[todayKey()]||[];
+      const out = document.getElementById('exam-name');
+      out.innerHTML = '';
       if(!list.length){
-        el.textContent='No examinations today!';
-      } else if(list.length===1){
-        el.textContent=list[0];
+        out.textContent = 'No examinations today!';
+      } else if(list.length === 1){
+        out.textContent = list[0];
       } else {
-        const ul=document.createElement('ul');
+        const ul = document.createElement('ul');
         list.forEach(x=>{
-          const li=document.createElement('li');
-          li.textContent=x;
+          const li = document.createElement('li');
+          li.textContent = x;
           ul.appendChild(li);
         });
-        el.appendChild(ul);
+        out.appendChild(ul);
       }
     }
 
-    // JSONP-based view-counter to avoid CORS
     function updateViewCount(){
-      const ctr=document.getElementById('view-counter');
-      const ns=window.location.host;             // your Vercel domain
-      const key='visits';
-      // define global callback
-      window._countapi_cb = function(data){
-        ctr.textContent = data.value + ' viewed this site';
-      };
-      const script = document.createElement('script');
-      script.src = `https://api.countapi.xyz/hit/${ns}/${key}?callback=_countapi_cb`;
-      script.onerror = ()=>{ ctr.textContent = '0 viewed this site'; };
-      document.body.appendChild(script);
+      const ctr = document.getElementById('view-counter');
+      const ns  = window.location.host;
+      const key = 'visits';
+      const base = `https://api.countapi.xyz/hit/${ns}/${key}`;
+      const proxy = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(base);
+
+      fetch(proxy)
+        .then(r => r.json())
+        .then(data => {
+          ctr.textContent = data.value + ' viewed this site';
+        })
+        .catch(err => {
+          console.error('view count error', err);
+          ctr.textContent = '0 viewed this site';
+        });
     }
 
-    // start everything
-    let last = initializeCountdown();
-    let lastKey = getTodayKey();
-    renderCurrentExam();
+    let last = initialize(), lastDate = todayKey();
+    renderExams();
     updateViewCount();
 
     (function tick(){
-      const now=Date.now(), diff=targetTime-now;
-      if(diff<0){
+      const now = Date.now(), diff = targetTime - now;
+      if(diff < 0){
         document.querySelector('.timer').innerHTML =
           "<div class='time-section'><div class='box'>Examinations ended!!! 🥳🥳🥳</div></div>";
-        document.getElementById('exam-name').textContent='';
+        document.getElementById('exam-name').textContent = '';
         return;
       }
-      const d=Math.floor(diff/(1000*60*60*24)),
-            h=Math.floor((diff%(1000*60*60*24))/(1000*60*60)),
-            m=Math.floor((diff%(1000*60*60))/(1000*60)),
-            s=Math.floor((diff%(1000*60))/1000);
+      const d = Math.floor(diff/(1000*60*60*24));
+      const h = Math.floor((diff%(1000*60*60*24))/(1000*60*60));
+      const m = Math.floor((diff%(1000*60*60))/(1000*60));
+      const s = Math.floor((diff%(1000*60))/1000);
 
-      if(d!==last.days)    updateDigits('days-digits',d);
-      if(h!==last.hours)   updateDigits('hours-digits',h);
-      if(m!==last.minutes) updateDigits('minutes-digits',m);
-      if(s!==last.seconds) updateDigits('seconds-digits',s);
+      if(d !== last.days)    updateDigits('days-digits',d);
+      if(h !== last.hours)   updateDigits('hours-digits',h);
+      if(m !== last.minutes) updateDigits('minutes-digits',m);
+      if(s !== last.seconds) updateDigits('seconds-digits',s);
 
-      const key = getTodayKey();
-      if(key!==lastKey){
-        renderCurrentExam();
-        lastKey=key;
+      const td = todayKey();
+      if(td !== lastDate){
+        renderExams();
+        lastDate = td;
       }
-      last={ days:d, hours:h, minutes:m, seconds:s };
+      last = { days:d, hours:h, minutes:m, seconds:s };
       requestAnimationFrame(tick);
     })();
   </script>
