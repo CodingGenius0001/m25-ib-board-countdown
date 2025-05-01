@@ -36,10 +36,7 @@
       color: #333;
     }
     .label { margin-bottom: 5px; }
-    .digits {
-      display: flex;
-      gap: 5px;
-    }
+    .digits { display: flex; gap: 5px; }
     .box {
       font-family: 'Courier New', Courier, monospace;
       background: #fff;
@@ -63,7 +60,6 @@
       50%  { transform: rotateX(90deg); }
       100% { transform: rotateX(0deg); }
     }
-
     .current-exam {
       margin: 20px 0;
       text-align: center;
@@ -73,8 +69,6 @@
       font-size: 1.6em;
       margin-bottom: 10px;
     }
-
-    /* Box around the exam(s), with text at 20px */
     #exam-name {
       display: inline-block;
       background: #fff;
@@ -87,18 +81,18 @@
       font-size: 20px;
       font-weight: 600;
       color: #333;
-      text-align: left;
+      text-align: center;
       line-height: 1.4;
     }
-    #exam-name ul,
-    #exam-name li {
+    #exam-name ul {
       margin: 0;
-      padding-left: 1em;
-      font-size: inherit;
-      font-weight: inherit;
-      list-style: disc inside;
+      padding: 0;
+      list-style: none;
     }
-
+    #exam-name li {
+      margin: 0.2em 0;
+      text-align: center;
+    }
     .schedule-btn {
       font-family: 'Courier New', Courier, monospace;
       font-size: 1em;
@@ -110,8 +104,19 @@
       text-decoration: none;
       transition: background-color 0.3s ease;
     }
-    .schedule-btn:hover {
-      background-color: #555;
+    .schedule-btn:hover { background-color: #555; }
+    #view-counter {
+      position: fixed;
+      bottom: 10px;
+      left: 10px;
+      background: #fff;
+      color: #333;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 0.9em;
+      padding: 5px 10px;
+      border: 2px solid #333;
+      border-radius: 5px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.3);
     }
   </style>
 </head>
@@ -141,17 +146,17 @@
   </div>
 
   <div class="current-exam">
-    <h2>Current Examination</h2>
+    <h2>Current Examinations</h2>
     <div id="exam-name">Loading…</div>
   </div>
 
   <a href="https://www.ibo.org/globalassets/new-structure/programmes/dp/pdfs/may-2025-exam-schedule.pdf"
      class="schedule-btn" target="_blank">View M25 Schedule</a>
 
-  <script>
-    // Local target: May 21, 2025 at 14:20
-    const targetTime = new Date(2025, 4, 21, 14, 20, 0).getTime();
+  <div id="view-counter">Loading…</div>
 
+  <script>
+    const targetTime = new Date(2025, 4, 21, 14, 20, 0).getTime();
     const examSchedule = {
       "2025-04-25": ["School-based syllabus SL paper 1","Language & culture SL paper 1"],
       "2025-04-28": ["School-based syllabus SL paper 2","Language A Literature HL paper 1","Language A Literature SL paper 1","Language A Language & Literature HL paper 1","Language A Language & Literature SL paper 1","Language & culture SL paper 2"],
@@ -159,119 +164,122 @@
       "2025-04-30": ["Physics HL paper 2","Physics SL paper 2","Sports, exercise & health science HL paper 2","Sports, exercise & health science SL paper 2","Business management HL/SL paper 1","Business management HL paper 3"],
       "2025-05-01": [],
       "2025-05-02": ["Business management HL paper 2","Business management SL paper 2","Computer science HL paper 1","Computer science SL paper 1","Environmental systems & societies SL paper 1"],
-      /* …etc… */
       "2025-05-21": ["Mathematics AA HL paper 3","Mathematics AI HL paper 3"]
     };
 
-    function pad(n) {
-      return String(n).padStart(2, '0');
-    }
-
-    function rebuildDigits(el, value) {
+    function pad(n){ return String(n).padStart(2,'0'); }
+    function rebuildDigits(el, val){
       el.innerHTML = '';
-      for (let char of pad(value)) {
-        let digitBox = document.createElement('div');
-        digitBox.className = 'box';
-        digitBox.textContent = char;
-        digitBox.setAttribute('data-digit', char);
-        el.appendChild(digitBox);
+      for(let ch of pad(val)){
+        const b = document.createElement('div');
+        b.className = 'box';
+        b.textContent = ch;
+        b.dataset.digit = ch;
+        el.appendChild(b);
       }
     }
-
-    function updateDigits(id, value) {
-      const el = document.getElementById(id);
-      const str = pad(value);
-      if (el.children.length !== str.length) {
-        rebuildDigits(el, value);
+    function updateDigits(id, val){
+      const el = document.getElementById(id), s = pad(val);
+      if(el.children.length !== s.length){
+        rebuildDigits(el, val);
         return;
       }
-      for (let i = 0; i < str.length; i++) {
-        const boxEl = el.children[i];
-        if (boxEl.getAttribute('data-digit') !== str[i]) {
-          boxEl.classList.add('flip');
-          setTimeout(() => {
-            boxEl.textContent = str[i];
-            boxEl.setAttribute('data-digit', str[i]);
-          }, 300);
-          setTimeout(() => boxEl.classList.remove('flip'), 600);
+      for(let i=0;i<s.length;i++){
+        const box = el.children[i];
+        if(box.dataset.digit !== s[i]){
+          box.classList.add('flip');
+          setTimeout(()=>{
+            box.textContent = s[i];
+            box.dataset.digit = s[i];
+          },300);
+          setTimeout(()=> box.classList.remove('flip'),600);
         }
       }
     }
 
-    function initializeCountdown() {
-      const now = Date.now();
-      const diff = targetTime - now;
-      const days = Math.floor(diff / (1000*60*60*24));
-      const hours = Math.floor((diff % (1000*60*60*24)) / (1000*60*60));
-      const minutes = Math.floor((diff % (1000*60*60)) / (1000*60));
-      const seconds = Math.floor((diff % (1000*60)) / 1000);
-
-      rebuildDigits(document.getElementById('days-digits'), days);
-      rebuildDigits(document.getElementById('hours-digits'), hours);
-      rebuildDigits(document.getElementById('minutes-digits'), minutes);
-      rebuildDigits(document.getElementById('seconds-digits'), seconds);
-
-      return { days, hours, minutes, seconds };
+    function initialize(){
+      const now = Date.now(), diff = targetTime - now;
+      const d = Math.floor(diff/(1000*60*60*24));
+      const h = Math.floor((diff%(1000*60*60*24))/(1000*60*60));
+      const m = Math.floor((diff%(1000*60*60))/(1000*60));
+      const s = Math.floor((diff%(1000*60))/1000);
+      rebuildDigits(document.getElementById('days-digits'), d);
+      rebuildDigits(document.getElementById('hours-digits'), h);
+      rebuildDigits(document.getElementById('minutes-digits'), m);
+      rebuildDigits(document.getElementById('seconds-digits'), s);
+      return { days:d, hours:h, minutes:m, seconds:s };
     }
-
-    function getTodayKey() {
-      const d = new Date();
-      return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+    function todayKey(){
+      const t = new Date();
+      return `${t.getFullYear()}-${pad(t.getMonth()+1)}-${pad(t.getDate())}`;
     }
-
-    function renderCurrentExam() {
-      const key = getTodayKey();
-      const exams = examSchedule[key] || [];
-      const container = document.getElementById('exam-name');
-      container.innerHTML = '';
-
-      if (exams.length === 0) {
-        container.textContent = 'No examination';
-      } else if (exams.length === 1) {
-        container.textContent = exams[0];
+    function renderExams(){
+      const list = examSchedule[todayKey()]||[];
+      const out  = document.getElementById('exam-name');
+      out.innerHTML = '';
+      if(!list.length){
+        out.textContent = 'No examinations today!';
+      } else if(list.length === 1){
+        out.textContent = list[0];
       } else {
         const ul = document.createElement('ul');
-        exams.forEach(ex => {
+        list.forEach(x=>{
           const li = document.createElement('li');
-          li.textContent = ex;
+          li.textContent = x;
           ul.appendChild(li);
         });
-        container.appendChild(ul);
+        out.appendChild(ul);
       }
     }
 
-    let lastValues = initializeCountdown();
-    let lastDateKey = getTodayKey();
-    renderCurrentExam();
+    function updateViewCount(){
+      const ctr = document.getElementById('view-counter');
+      const ns  = window.location.host;
+      const key = 'visits';
+      const base = `https://api.countapi.xyz/hit/${ns}/${key}`;
+      const proxyUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent(base);
 
-    (function tick() {
-      const now = Date.now();
-      const diff = targetTime - now;
+      fetch(proxyUrl)
+        .then(r => r.json())
+        .then(data => {
+          // AllOrigins returns { contents: "…raw JSON string…", status: … }
+          const parsed = JSON.parse(data.contents);
+          ctr.textContent = parsed.value + ' viewed this site';
+        })
+        .catch(err => {
+          console.error('view count error', err);
+          ctr.textContent = '0 viewed this site';
+        });
+    }
 
-      if (diff < 0) {
+    let last       = initialize();
+    let lastDate   = todayKey();
+    renderExams();
+    updateViewCount();
+    (function tick(){
+      const now = Date.now(), diff = targetTime - now;
+      if(diff < 0){
         document.querySelector('.timer').innerHTML =
           "<div class='time-section'><div class='box'>Examinations ended!!! 🥳🥳🥳</div></div>";
         document.getElementById('exam-name').textContent = '';
         return;
       }
+      const d = Math.floor(diff/(1000*60*60*24)),
+            h = Math.floor((diff%(1000*60*60*24))/(1000*60*60)),
+            m = Math.floor((diff%(1000*60*60))/(1000*60)),
+            s = Math.floor((diff%(1000*60))/1000);
 
-      const days = Math.floor(diff / (1000*60*60*24));
-      const hours = Math.floor((diff % (1000*60*60*24)) / (1000*60*60));
-      const minutes = Math.floor((diff % (1000*60*60)) / (1000*60));
-      const seconds = Math.floor((diff % (1000*60)) / 1000);
+      if(d !== last.days)    updateDigits('days-digits', d);
+      if(h !== last.hours)   updateDigits('hours-digits', h);
+      if(m !== last.minutes) updateDigits('minutes-digits', m);
+      if(s !== last.seconds) updateDigits('seconds-digits', s);
 
-      if (days !== lastValues.days)       updateDigits('days-digits', days);
-      if (hours !== lastValues.hours)    updateDigits('hours-digits', hours);
-      if (minutes !== lastValues.minutes) updateDigits('minutes-digits', minutes);
-      if (seconds !== lastValues.seconds) updateDigits('seconds-digits', seconds);
-
-      const currentKey = getTodayKey();
-      if (currentKey !== lastDateKey) {
-        renderCurrentExam();
-        lastDateKey = currentKey;
+      const td = todayKey();
+      if(td !== lastDate){
+        renderExams();
+        lastDate = td;
       }
-
-      lastValues = { days, hours, minutes, seconds };
+      last = { days:d, hours:h, minutes:m, seconds:s };
       requestAnimationFrame(tick);
     })();
   </script>
