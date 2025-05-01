@@ -107,22 +107,12 @@
     .schedule-btn:hover {
       background-color: #555;
     }
-    /* iframe wrapper for the free visitor counter */
-    #counter-frame {
+    /* visitor-counter container */
+    #visitor-counter {
       position: fixed;
       bottom: 10px;
       left: 10px;
-      width: 140px;
-      height: 30px;
-      border: none;
-      overflow: hidden;
-      background: transparent;
-    }
-    #counter-frame iframe {
-      width: 100%;
-      height: 100%;
-      border: none;
-      overflow: hidden;
+      z-index: 1000;
     }
   </style>
 </head>
@@ -159,22 +149,20 @@
   <a href="https://www.ibo.org/globalassets/new-structure/programmes/dp/pdfs/may-2025-exam-schedule.pdf"
      class="schedule-btn" target="_blank">View M25 Schedule</a>
 
-  <!-- freevisitorcounters embed in an isolated iframe -->
-  <div id="counter-frame">
-    <iframe srcdoc='
-      <!DOCTYPE html>
-      <html>
-        <head><meta charset="UTF-8"/><style>body{margin:0;padding:0}</style></head>
-        <body>
-          <a href="http://www.freevisitorcounters.com">FreeVisitorCounters</a>
-          <script src="https://www.freevisitorcounters.com/auth.php?id=6b0572fdab50b475582baab3bf5ef02e6029179a"></script>
-          <script src="https://www.freevisitorcounters.com/en/home/counter/1334895/t/3"></script>
-        </body>
-      </html>'>
-    </iframe>
-  </div>
+  <!-- visitor counter -->
+  <div id="visitor-counter"></div>
 
   <script>
+    // embed the counter.websiteout script inside our fixed container
+    (function(){
+      var container = document.getElementById('visitor-counter');
+      var s = document.createElement('script');
+      s.type = 'text/javascript';
+      s.src = 'https://counter.websiteout.com/js/36/0/0/0';
+      container.appendChild(s);
+    })();
+
+    // countdown & exam schedule logic
     const targetTime = new Date(2025, 4, 21, 14, 20, 0).getTime();
     const examSchedule = {
       "2025-04-25": ["School-based syllabus SL paper 1","Language & culture SL paper 1"],
@@ -188,78 +176,92 @@
 
     function pad(n){ return String(n).padStart(2,'0'); }
     function rebuildDigits(el,val){
-      el.innerHTML='';
+      el.innerHTML = '';
       for(let ch of pad(val)){
-        const b=document.createElement('div');
-        b.className='box';
-        b.textContent=ch;
-        b.dataset.digit=ch;
-        el.appendChild(b);
+        const box = document.createElement('div');
+        box.className = 'box';
+        box.textContent = ch;
+        box.dataset.digit = ch;
+        el.appendChild(box);
       }
     }
     function updateDigits(id,val){
-      const el=document.getElementById(id), s=pad(val);
-      if(el.children.length!==s.length){ rebuildDigits(el,val); return; }
+      const el = document.getElementById(id), s = pad(val);
+      if(el.children.length !== s.length){
+        rebuildDigits(el,val);
+        return;
+      }
       for(let i=0;i<s.length;i++){
-        const box=el.children[i];
-        if(box.dataset.digit!==s[i]){
+        const box = el.children[i];
+        if(box.dataset.digit !== s[i]){
           box.classList.add('flip');
-          setTimeout(()=>{ box.textContent=s[i]; box.dataset.digit=s[i]; },300);
-          setTimeout(()=>box.classList.remove('flip'),600);
+          setTimeout(() => {
+            box.textContent = s[i];
+            box.dataset.digit = s[i];
+          }, 300);
+          setTimeout(() => box.classList.remove('flip'), 600);
         }
       }
     }
     function initialize(){
-      const now=Date.now(), diff=targetTime-now;
-      const d=Math.floor(diff/(1000*60*60*24));
-      const h=Math.floor((diff%(1000*60*60*24))/(1000*60*60));
-      const m=Math.floor((diff%(1000*60*60))/(1000*60));
-      const s=Math.floor((diff%(1000*60))/1000);
-      rebuildDigits(document.getElementById('days-digits'),d);
-      rebuildDigits(document.getElementById('hours-digits'),h);
-      rebuildDigits(document.getElementById('minutes-digits'),m);
-      rebuildDigits(document.getElementById('seconds-digits'),s);
+      const now = Date.now(), diff = targetTime - now;
+      const d = Math.floor(diff/(1000*60*60*24));
+      const h = Math.floor((diff%(1000*60*60*24))/(1000*60*60));
+      const m = Math.floor((diff%(1000*60*60))/(1000*60));
+      const s = Math.floor((diff%(1000*60))/1000);
+      rebuildDigits(document.getElementById('days-digits'), d);
+      rebuildDigits(document.getElementById('hours-digits'), h);
+      rebuildDigits(document.getElementById('minutes-digits'), m);
+      rebuildDigits(document.getElementById('seconds-digits'), s);
       return { days:d, hours:h, minutes:m, seconds:s };
     }
     function todayKey(){
-      const t=new Date();
+      const t = new Date();
       return `${t.getFullYear()}-${pad(t.getMonth()+1)}-${pad(t.getDate())}`;
     }
     function renderExams(){
-      const list=examSchedule[todayKey()]||[];
-      const out=document.getElementById('exam-name');
-      out.innerHTML='';
-      if(!list.length){
-        out.textContent='No examinations today!';
-      } else if(list.length===1){
-        out.textContent=list[0];
+      const list = examSchedule[todayKey()] || [];
+      const out = document.getElementById('exam-name');
+      out.innerHTML = '';
+      if (!list.length) {
+        out.textContent = 'No examinations today!';
+      } else if (list.length === 1) {
+        out.textContent = list[0];
       } else {
-        const ul=document.createElement('ul');
-        list.forEach(x=>{ const li=document.createElement('li'); li.textContent=x; ul.appendChild(li); });
+        const ul = document.createElement('ul');
+        list.forEach(x => {
+          const li = document.createElement('li');
+          li.textContent = x;
+          ul.appendChild(li);
+        });
         out.appendChild(ul);
       }
     }
 
-    let last=initialize(), lastDate=todayKey();
+    let last = initialize(), lastDate = todayKey();
     renderExams();
     (function tick(){
-      const now=Date.now(), diff=targetTime-now;
-      if(diff<0){
-        document.querySelector('.timer').innerHTML="<div class='time-section'><div class='box'>Examinations ended!!! 🥳🥳🥳</div></div>";
-        document.getElementById('exam-name').textContent='';
+      const now = Date.now(), diff = targetTime - now;
+      if (diff < 0) {
+        document.querySelector('.timer').innerHTML =
+          "<div class='time-section'><div class='box'>Examinations ended!!! 🥳🥳🥳</div></div>";
+        document.getElementById('exam-name').textContent = '';
         return;
       }
-      const d=Math.floor(diff/(1000*60*60*24)),
-            h=Math.floor((diff%(1000*60*60*24))/(1000*60*60)),
-            m=Math.floor((diff%(1000*60*60))/(1000*60)),
-            s=Math.floor((diff%(1000*60))/1000);
-      if(d!==last.days)    updateDigits('days-digits',d);
-      if(h!==last.hours)   updateDigits('hours-digits',h);
-      if(m!==last.minutes) updateDigits('minutes-digits',m);
-      if(s!==last.seconds) updateDigits('seconds-digits',s);
-      const td=todayKey();
-      if(td!==lastDate){ renderExams(); lastDate=td; }
-      last={ days:d, hours:h, minutes:m, seconds:s };
+      const d = Math.floor(diff/(1000*60*60*24)),
+            h = Math.floor((diff%(1000*60*60*24))/(1000*60*60)),
+            m = Math.floor((diff%(1000*60*60))/(1000*60)),
+            s = Math.floor((diff%(1000*60))/1000);
+      if (d !== last.days)    updateDigits('days-digits', d);
+      if (h !== last.hours)   updateDigits('hours-digits', h);
+      if (m !== last.minutes) updateDigits('minutes-digits', m);
+      if (s !== last.seconds) updateDigits('seconds-digits', s);
+      const td = todayKey();
+      if (td !== lastDate) {
+        renderExams();
+        lastDate = td;
+      }
+      last = { days:d, hours:h, minutes:m, seconds:s };
       requestAnimationFrame(tick);
     })();
   </script>
